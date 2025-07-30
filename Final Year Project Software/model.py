@@ -5,12 +5,9 @@ import seaborn as sns; sns.set_theme()
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
-from sklearn.model_selection import KFold
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 
@@ -25,16 +22,16 @@ def nbPipeline():
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', MultinomialNB())
-])
+    ])
     return pipeline
 
 def svmPipeline():
-        pipeline = Pipeline([
+    pipeline = Pipeline([
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', SVC(probability=True,random_state=42))
-])
-        return pipeline
+    ])
+    return pipeline
 
 def decisionTreePipeline():
     pipeline = Pipeline([
@@ -61,7 +58,7 @@ def xgBoostPipeline():
     return pipeline
 
 def parameterTuning(model, x, y, parameters): 
-    gsModel = GridSearchCV(model, parameters, cv=5, n_jobs=-1, scoring='accuracy')
+    gsModel = GridSearchCV(model, parameters, cv=10, n_jobs=-1, scoring='accuracy')
     gsModel.fit(x, y)
     return gsModel
 
@@ -71,17 +68,17 @@ def nbSmote():
         ('tfidf', TfidfTransformer()),
         ('smote', SMOTE(random_state=42)),
         ('clf', MultinomialNB())
-])
+    ])
     return pipeline
 
 def svmSmote():
-        pipeline = Pipeline([
+    pipeline = Pipeline([
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('smote', SMOTE(random_state=42)),
         ('clf', SVC(probability=True, random_state=42))
-])
-        return pipeline
+    ])
+    return pipeline
 
 def decisionTreeSmote():
     pipeline = Pipeline([
@@ -118,13 +115,13 @@ def testModel(model, xT, yT, modelName):
     print(classification_report(yT, predicted))
    
     # creates heatmap confusion matrix 
-    # classes = ["False", "True"]
-    # confMatx = confusion_matrix(yT, predicted)
-    # confHeatMap = sns.heatmap(confMatx.T, square = True, annot = True, fmt = 'd', xticklabels = classes, yticklabels = classes)
-    # plt.xlabel("True label")
-    # plt.ylabel("Predicted label")
-    # plt.title(modelName)
-    # plt.show()
+    classes = ["False", "True"]
+    confMatx = confusion_matrix(yT, predicted)
+    confHeatMap = sns.heatmap(confMatx.T, square = True, annot = True, fmt = 'd', xticklabels = classes, yticklabels = classes)
+    plt.xlabel("True label")
+    plt.ylabel("Predicted label")
+    plt.title(modelName)
+    plt.show()
 
     # Uncomment if you want confusion matrix visualization
     # classes = ["FALSE", "TRUE"]
@@ -142,7 +139,8 @@ def kfold(modelName,model, x, y):
     scores = cross_val_score(model, x, y, cv=kf, scoring='accuracy')
     # prints average accuracy from all 10 folds to 2 decimal places
     #print(modelName + ": %0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
-    print(modelName + ": %0.2f accuracy" % (scores.mean()))
+    #print(modelName + ": %0.2f accuracy" % (scores.mean()))
+    print(f"{modelName}: {scores.mean():.2f}")
 
 def rocAUC(model, xT, yT, modelName):
     try:
